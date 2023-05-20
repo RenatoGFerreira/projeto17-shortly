@@ -31,12 +31,13 @@ export async function signUp(req, res) {
 export async function signIn(req, res) {
   const { email, password } = req.body
 
-  const { rows: user} = await db.query(`
+  const { rows: users} = await db.query(`
     SELECT * FROM users WHERE email=$1
   `, [email]
   )
-
+  const [user] = users
   if(!user) return res.sendStatus(401)
+
 
   if(bcrypt.compareSync(password, user[0].password)) {
     const token = uuid()
