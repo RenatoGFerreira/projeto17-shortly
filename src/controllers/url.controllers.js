@@ -40,3 +40,26 @@ export async function getUrlById(req, res){
     res.status(500).send(err.message)
   }
 }
+
+export async function redirectUrl(req, res){
+  const {shortUrl} = req.params
+
+  const urlOriginal = await db.query(`
+    SELECT * FROM shortens WHERE "shortUrl"=$1
+  `, [shortUrl])
+
+  if(urlOriginal.rowCount === 0 ) return res.sendStatus(404)
+
+  const object = urlOriginal.rows[0]
+  await db.query(`
+    UPDATE shortens SET "viewsCount"= "viewsCount" + 1 WHERE id=$1;
+  `, [object.id])
+
+
+  try{
+    res.redirect(object.url)
+
+  }catch(err){
+    res.status(500).send(err.message)
+  }
+}
