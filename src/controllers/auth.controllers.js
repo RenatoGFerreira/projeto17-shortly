@@ -52,3 +52,55 @@ export async function signIn(req, res) {
 
   return res.sendStatus(401)
 }
+
+export async function getInfoUser(req, res){
+  const { user } = res.locals
+  console.log(user)
+
+  const urlsByUser = await db.query(`
+    SELECT * FROM shortens WHERE "userId"=$1;
+  `, [user.id])
+
+  const shortenedUrls = urlsByUser.rows.map(obj => {
+    return {
+      id: obj.id ,
+      shortUrl: obj.shortUrl , 
+      url: obj.url ,
+      visitCount: obj.visitCount 
+    }
+  })
+
+  const totViews = await db.query(`
+    SELECT SUM(shortens."viewsCount") FROM shortens WHERE "userId"=$1;
+  ` [user.id])
+
+
+  try{
+    res.status(200).send({
+      id: user.id,
+      name: user.name,
+      visitCount: totViews.rows.sum || 0,
+      shortenedUrls: shortenedUrls
+    })
+  }catch(err){
+    res.status(500).send(err.message)
+  }
+}
+
+export async function getRankingUsers(Req, res){
+
+  const object = await db.query(`
+      SELECT u.id, u.name, COUNT(s.id) as "linkCount",
+      COALESCE(SUM(s."viewsCount"), 0) as "visitCount"
+      FROM users u 
+      LEFT JOIN shortens s ON s."userId" = u.id
+      GROUP BY u.id
+      ORDER BY "visitCount" DESC LIMIT 10
+    `)
+
+  try{
+    res.status(200).send(object.rows)
+  }catch(err){
+    res.status(500).send(err.message)
+  }
+}
