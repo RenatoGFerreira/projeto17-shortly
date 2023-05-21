@@ -31,21 +31,21 @@ export async function signUp(req, res) {
 export async function signIn(req, res) {
   const { email, password } = req.body
 
-  const { rows: users} = await db.query(`
+  const { rows } = await db.query(`
     SELECT * FROM users WHERE email=$1
   `, [email]
   )
-  const [user] = users
-  if(!user) return res.sendStatus(401)
+
+  if(!rows[0]) return res.sendStatus(401)
 
 
-  if(bcrypt.compareSync(password, user[0].password)) {
+  if(bcrypt.compareSync(password, rows[0].password)) {
     const token = uuid()
 
     await db.query(`
       INSERT INTO sessions (token, "userId")
       VALUES ($1, $2)
-    `, [token, user[0].id])
+    `, [token, rows[0].id])
     
     return res.send({token})
   }
