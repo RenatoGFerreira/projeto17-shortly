@@ -63,3 +63,26 @@ export async function redirectUrl(req, res){
     res.status(500).send(err.message)
   }
 }
+
+export async function deleteUrl(req, res){
+  const { id } = req.params
+  const{ user } = res.locals
+
+
+  const object = await db.query(`
+      SELECT * FROM shortens WHERE id=$1
+  `, [id])
+
+  if(object.rowCount === 0 ) return res.sendStatus(404)
+
+  if(user.id !== object.rows[0].userId) return res.sendStatus(401)
+
+  try{
+    await db.query(`
+      DELETE FROM shortens WHERE id=$1;
+    ` [id])
+    res.sendStatus(204)
+  }catch(err){
+    res.status(500).send(err.message)
+  }
+}
