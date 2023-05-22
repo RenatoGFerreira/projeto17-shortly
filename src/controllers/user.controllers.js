@@ -66,7 +66,7 @@ export async function getInfoUser(req, res){
       id: obj.id ,
       shortUrl: obj.shortUrl , 
       url: obj.url ,
-      visitCount: obj.visitCount 
+      visitCount: obj.viewsCount 
     }
   })
 
