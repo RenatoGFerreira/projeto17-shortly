@@ -90,12 +90,14 @@ export async function getInfoUser(req, res){
 export async function getRankingUsers(Req, res){
 
   const object = await db.query(`
-      SELECT u.id, u.name, COUNT(s.id) as "linkCount",
-      COALESCE(SUM(s."viewsCount"), 0) as "visitCount"
-      FROM users u 
-      LEFT JOIN shortens s ON s."userId" = u.id
-      GROUP BY u.id
-      ORDER BY "visitCount" DESC LIMIT 10
+        SELECT users.id, users.name, 
+        COUNT(shortens.id) as "linkCount",
+        COALESCE(SUM(shortens."viewsCount"),0) as "visitCount" 
+        FROM users 
+        LEFT JOIN shortens ON shortens."userId" = users.id
+        GROUP BY users.id
+        ORDER BY "visitCount" 
+        DESC LIMIT 10;
     `)
 
   try{
