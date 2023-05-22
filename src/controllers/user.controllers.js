@@ -72,14 +72,15 @@ export async function getInfoUser(req, res){
 
   const totViews = await db.query(`
     SELECT SUM(shortens."viewsCount") FROM shortens WHERE "userId"=$1;
-  ` [user.id])
+  `, [user.id])
 
 
+  console.log(+totViews.rows[0].sum)
   try{
     res.status(200).send({
       id: user.id,
       name: user.name,
-      visitCount: totViews.rows.sum || 0,
+      visitCount: +totViews.rows[0].sum || 0,
       shortenedUrls: shortenedUrls
     })
   }catch(err){
